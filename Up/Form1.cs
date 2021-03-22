@@ -138,7 +138,7 @@ namespace Up
                                 distOdrIdx++;
                             }
 
-                            while (ruSheet.Cells[5, ruOdrIdx].Value == null && !string.IsNullOrWhiteSpace(sheet.Cells[5, ruOdrIdx].Value.ToString()))
+                            while (ruSheet.Cells[5, ruOdrIdx].Value != null && !string.IsNullOrWhiteSpace(ruSheet.Cells[5, ruOdrIdx].Value.ToString()))
                             {
                                 var myType = ruSheet.Cells[5, ruOdrIdx].Value.ToString();
                                 if (!ruDic.ContainsKey(myType))
@@ -168,7 +168,7 @@ namespace Up
                                 ruFacIdx++;
                             }
 
-                            Console.WriteLine(JsonConvert.SerializeObject(distDic));
+                            Console.WriteLine(JsonConvert.SerializeObject(ruDic));
                             /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
                             {
                                 ruDeptIdx++;
