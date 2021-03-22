@@ -109,7 +109,9 @@ namespace Up
                             var ruOdrIdx = 1;
                             var disNameIdx = 1;
                             var distDeptIdx = 1;
-
+                            var ruFacIdx = 1;
+                            var distFacIdx = 1;
+                            //廠別
                             while (sheet.Cells[5, distOdrIdx].Value == null || sheet.Cells[5, distOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
                             {
                                 distOdrIdx++;
@@ -130,7 +132,17 @@ namespace Up
                                 distDeptIdx++;
                             }
 
-                            Console.WriteLine($"distOdrIdx={distOdrIdx}, disNameIdx={disNameIdx}, distDeptIdx={distDeptIdx}, ruOdrIdx={ruOdrIdx}");
+                            while (sheet.Cells[6, distFacIdx].Value == null || sheet.Cells[6, distFacIdx].Value.ToString() != "廠別")
+                            {
+                                distFacIdx++;
+                            }
+
+                            while (ruSheet.Cells[6, ruFacIdx].Value == null || ruSheet.Cells[6, ruFacIdx].Value.ToString() != "廠別")
+                            {
+                                ruFacIdx++;
+                            }
+
+                            Console.WriteLine($"distOdrIdx={distOdrIdx}, disNameIdx={disNameIdx}, distDeptIdx={distDeptIdx}, ruOdrIdx={ruOdrIdx}, distFacIdx={distFacIdx}, ruFacIdx={ruFacIdx}");
                             /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
                             {
                                 ruDeptIdx++;
