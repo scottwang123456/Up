@@ -15,10 +15,9 @@ namespace Up
 {
     public partial class Form1 : Form
     {
-        ExcelWorksheet ruSheet = null;
         int ruNameIdx = 1;
         int ruDeptIdx = 1;
-
+        string ruWorkSheet = "";
         public Form1()
         {
             InitializeComponent();
@@ -76,8 +75,6 @@ namespace Up
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string titleOdr = "ORDER NO.";
-
             if (checkedListBox1.CheckedItems.Count > 0)
             {
                 Dictionary<string, bool> checkList = new Dictionary<string, bool>();
@@ -90,42 +87,56 @@ namespace Up
 
                 Console.WriteLine(string.Join(",", checkList));
 
-                var excelFile = new FileInfo(textBox1.Text);
-
-                using (var excel = new ExcelPackage(excelFile))
+                var ruExcelFile = new FileInfo(textBox2.Text);
+                if (ruExcelFile.Exists)
                 {
-                    var sheet = excel.Workbook.Worksheets[0];
-                    //MessageBox.Show($"{sheet.Cells[1, 1].Value}");
-                    //foreach (var sheet in excel.Workbook.Worksheets)
-                    //{
-                    //    MessageBox.Show($"{sheet.Name}");
-                    //}
-                    //ExcelWorksheet sheet1 = excel.Workbook.Worksheets["MySheet"];
-
-                    var distOdrIdx = 1;
-                    var disNameIdx = 1;
-                    var distDeptIdx = 1;
-
-                    while (sheet.Cells[5, distOdrIdx].Value == null || sheet.Cells[5, distOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
+                    using (var ruExcel = new ExcelPackage(ruExcelFile))
                     {
-                        distOdrIdx++;
+                        ExcelWorksheet ruSheet = ruExcel.Workbook.Worksheets[ruWorkSheet];
+                        var excelFile = new FileInfo(textBox1.Text);
+
+                        using (var excel = new ExcelPackage(excelFile))
+                        {
+                            var sheet = excel.Workbook.Worksheets[0];
+                            //MessageBox.Show($"{sheet.Cells[1, 1].Value}");
+                            //foreach (var sheet in excel.Workbook.Worksheets)
+                            //{
+                            //    MessageBox.Show($"{sheet.Name}");
+                            //}
+                            //ExcelWorksheet sheet1 = excel.Workbook.Worksheets["MySheet"];
+
+                            var distOdrIdx = 1;
+                            var ruOdrIdx = 1;
+                            var disNameIdx = 1;
+                            var distDeptIdx = 1;
+
+                            while (sheet.Cells[5, distOdrIdx].Value == null || sheet.Cells[5, distOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
+                            {
+                                distOdrIdx++;
+                            }
+
+                            while (ruSheet.Cells[5, ruOdrIdx].Value == null || ruSheet.Cells[5, ruOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
+                            {
+                                ruOdrIdx++;
+                            }
+
+                            while (sheet.Cells[6, disNameIdx].Value == null || sheet.Cells[6, disNameIdx].Value.ToString() != "製單人")
+                            {
+                                disNameIdx++;
+                            }
+
+                            while (sheet.Cells[6, distDeptIdx].Value == null || sheet.Cells[6, distDeptIdx].Value.ToString() != "部門")
+                            {
+                                distDeptIdx++;
+                            }
+
+                            Console.WriteLine($"distOdrIdx={distOdrIdx}, disNameIdx={disNameIdx}, distDeptIdx={distDeptIdx}, ruOdrIdx={ruOdrIdx}");
+                            /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
+                            {
+                                ruDeptIdx++;
+                            }*/
+                        }
                     }
-
-                    while (sheet.Cells[6, disNameIdx].Value == null || sheet.Cells[6, disNameIdx].Value.ToString() != "製單人")
-                    {
-                        disNameIdx++;
-                    }
-
-                    while (sheet.Cells[6, distDeptIdx].Value == null || sheet.Cells[6, distDeptIdx].Value.ToString() != "部門")
-                    {
-                        distDeptIdx++;
-                    }
-
-                    Console.WriteLine($"distOdrIdx={distOdrIdx}, disNameIdx={disNameIdx}, distDeptIdx={distDeptIdx}");
-                    /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
-                    {
-                        ruDeptIdx++;
-                    }*/
                 }
             }
             else
@@ -144,18 +155,18 @@ namespace Up
                 using (var excel = new ExcelPackage(excelFile))
                 {
                     //MessageBox.Show(string.Join(",", excel.Workbook.Worksheets.Select(x => x.Name)));
-                    string workSheet = "";
+                    ruWorkSheet = "";
                     foreach (var sheet in excel.Workbook.Worksheets)
                     {
                         if (sheet.Name.StartsWith("WK", StringComparison.OrdinalIgnoreCase))
                         {
-                            workSheet = sheet.Name;
+                            ruWorkSheet = sheet.Name;
                         }
                     }
 
-                    label3.Text = workSheet;
+                    label3.Text = ruWorkSheet;
                     Application.DoEvents();
-                    ExcelWorksheet sheet1 = excel.Workbook.Worksheets[workSheet];
+                    ExcelWorksheet sheet1 = excel.Workbook.Worksheets[ruWorkSheet];
 
                     //"UA1J"
                     if (sheet1 != null)
@@ -195,8 +206,8 @@ namespace Up
                         //MessageBox.Show($"{string.Join(",", nameList)}");
 
                         checkedListBox1.Items.AddRange(nameList.ToArray());
-                        if (checkedListBox1.Items.Count > 0)
-                            ruSheet = sheet1;
+                        /*if (checkedListBox1.Items.Count > 0)
+                            ruSheet = sheet1;*/
                     }
                     else
                     {
