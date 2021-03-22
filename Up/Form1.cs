@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -111,14 +112,39 @@ namespace Up
                             var distDeptIdx = 1;
                             var ruFacIdx = 1;
                             var distFacIdx = 1;
-                            //廠別
+
+                            Dictionary<string, int> ruDic = new Dictionary<string, int>();
+                            Dictionary<string, int> distDic = new Dictionary<string, int>();
+
                             while (sheet.Cells[5, distOdrIdx].Value == null || sheet.Cells[5, distOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
                             {
                                 distOdrIdx++;
                             }
+                            distOdrIdx++;
 
                             while (ruSheet.Cells[5, ruOdrIdx].Value == null || ruSheet.Cells[5, ruOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
                             {
+                                ruOdrIdx++;
+                            }
+                            ruOdrIdx++;
+
+                            while (sheet.Cells[5, distOdrIdx].Value != null && !string.IsNullOrWhiteSpace(sheet.Cells[5, distOdrIdx].Value.ToString()))
+                            {
+                                var myType = sheet.Cells[5, distOdrIdx].Value.ToString();
+                                if (!distDic.ContainsKey(myType))
+                                {
+                                    distDic.Add(myType, distOdrIdx);
+                                }
+                                distOdrIdx++;
+                            }
+
+                            while (ruSheet.Cells[5, ruOdrIdx].Value == null && !string.IsNullOrWhiteSpace(sheet.Cells[5, ruOdrIdx].Value.ToString()))
+                            {
+                                var myType = ruSheet.Cells[5, ruOdrIdx].Value.ToString();
+                                if (!ruDic.ContainsKey(myType))
+                                {
+                                    ruDic.Add(myType, ruOdrIdx);
+                                }
                                 ruOdrIdx++;
                             }
 
@@ -142,7 +168,7 @@ namespace Up
                                 ruFacIdx++;
                             }
 
-                            Console.WriteLine($"distOdrIdx={distOdrIdx}, disNameIdx={disNameIdx}, distDeptIdx={distDeptIdx}, ruOdrIdx={ruOdrIdx}, distFacIdx={distFacIdx}, ruFacIdx={ruFacIdx}");
+                            Console.WriteLine(JsonConvert.SerializeObject(distDic));
                             /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
                             {
                                 ruDeptIdx++;
