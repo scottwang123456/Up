@@ -101,6 +101,31 @@ namespace Up
                     //    MessageBox.Show($"{sheet.Name}");
                     //}
                     //ExcelWorksheet sheet1 = excel.Workbook.Worksheets["MySheet"];
+
+                    var distOdrIdx = 1;
+                    var disNameIdx = 1;
+                    var distDeptIdx = 1;
+
+                    while (sheet.Cells[5, distOdrIdx].Value == null || sheet.Cells[5, distOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
+                    {
+                        distOdrIdx++;
+                    }
+
+                    while (sheet.Cells[6, disNameIdx].Value == null || sheet.Cells[6, disNameIdx].Value.ToString() != "製單人")
+                    {
+                        disNameIdx++;
+                    }
+
+                    while (sheet.Cells[6, distDeptIdx].Value == null || sheet.Cells[6, distDeptIdx].Value.ToString() != "部門")
+                    {
+                        distDeptIdx++;
+                    }
+
+                    Console.WriteLine($"distOdrIdx={distOdrIdx}, disNameIdx={disNameIdx}, distDeptIdx={distDeptIdx}");
+                    /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
+                    {
+                        ruDeptIdx++;
+                    }*/
                 }
             }
             else
