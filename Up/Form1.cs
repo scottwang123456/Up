@@ -212,6 +212,7 @@ namespace Up
                         int idx = 7;
                         ruNameIdx = 1;
                         ruDeptIdx = 1;
+                        int ruACCOUNT = 1;
                         while (sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人")
                         {
                             ruNameIdx++;
@@ -221,6 +222,13 @@ namespace Up
                         {
                             ruDeptIdx++;
                         }
+
+                        while (sheet1.Cells[5, ruACCOUNT].Value == null || sheet1.Cells[5, ruACCOUNT].Value.ToString() != "ACCOUNT")
+                        {
+                            ruACCOUNT++;
+                        }
+
+
 
                         Dictionary<string, bool> DicName = new Dictionary<string, bool>();
 
