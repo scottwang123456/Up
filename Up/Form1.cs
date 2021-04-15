@@ -338,7 +338,9 @@ namespace Up
 
                         if (compareErr.ToString().Length > 0)
                         {
-                            Console.WriteLine(compareErr.ToString());
+                            var errDialog = new Form2();
+                            errDialog.SetError(compareErr.ToString());
+                            errDialog.ShowDialog();
                             return;
                         }
 
