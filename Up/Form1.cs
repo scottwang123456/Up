@@ -212,7 +212,8 @@ namespace Up
                         int idx = 7;
                         ruNameIdx = 1;
                         ruDeptIdx = 1;
-                        int ruACCOUNT = 1;
+                        int ruFactoryIdx = 1;
+                        int ruACCOUNTIdx = 1;
                         while (sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人")
                         {
                             ruNameIdx++;
@@ -223,16 +224,38 @@ namespace Up
                             ruDeptIdx++;
                         }
 
-                        while (sheet1.Cells[5, ruACCOUNT].Value == null || sheet1.Cells[5, ruACCOUNT].Value.ToString() != "ACCOUNT")
+                        while (sheet1.Cells[5, ruACCOUNTIdx].Value == null || sheet1.Cells[5, ruACCOUNTIdx].Value.ToString() != "ACCOUNT")
                         {
-                            ruACCOUNT++;
+                            ruACCOUNTIdx++;
                         }
 
+                        while (ruFactoryIdx < sheet1.Dimension.Columns && (sheet1.Cells[6, ruFactoryIdx].Value == null || sheet1.Cells[6, ruFactoryIdx].Value.ToString() != "廠別"))
+                        {
+                            ruFactoryIdx++;
+                        }
 
+                        Dictionary<string, bool> DicRM = new Dictionary<string, bool>();
+
+                        while (idx <= sheet1.Dimension.Rows)
+                        {
+                            if (string.Equals(sheet1.Cells[idx, ruACCOUNTIdx].Value?.ToString(), "RM", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (sheet1.Cells[idx, ruFactoryIdx].Value != null)
+                                {
+                                    var factory = $"{sheet1.Cells[idx, ruFactoryIdx].Value}";
+
+                                    if (!DicRM.ContainsKey(factory))
+                                    {
+                                        DicRM.Add(factory, false);
+                                    }
+                                }
+                            }
+                            idx++;
+                        }
 
                         Dictionary<string, bool> DicName = new Dictionary<string, bool>();
-
-                        while (sheet1.Cells[idx, ruDeptIdx].Value != null && !string.IsNullOrEmpty(sheet1.Cells[idx, ruDeptIdx].Value.ToString()))
+                        idx = 7;
+                        while (idx <= sheet1.Dimension.Rows)
                         {
                             if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
                             {
