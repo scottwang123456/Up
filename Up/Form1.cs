@@ -18,6 +18,8 @@ namespace Up
     {
         int ruNameIdx = 1;
         int ruDeptIdx = 1;
+        int ruOdrIdx = 1;
+        int ruFacIdx = 1;
         string ruWorkSheet = "";
         public Form1()
         {
@@ -107,10 +109,8 @@ namespace Up
                             //ExcelWorksheet sheet1 = excel.Workbook.Worksheets["MySheet"];
 
                             var distOdrIdx = 1;
-                            var ruOdrIdx = 1;
                             var disNameIdx = 1;
                             var distDeptIdx = 1;
-                            var ruFacIdx = 1;
                             var distFacIdx = 1;
 
                             Dictionary<string, int> ruDic = new Dictionary<string, int>();
@@ -121,12 +121,6 @@ namespace Up
                                 distOdrIdx++;
                             }
                             distOdrIdx++;
-
-                            while (ruSheet.Cells[5, ruOdrIdx].Value == null || ruSheet.Cells[5, ruOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
-                            {
-                                ruOdrIdx++;
-                            }
-                            ruOdrIdx++;
 
                             while (sheet.Cells[5, distOdrIdx].Value != null && !string.IsNullOrWhiteSpace(sheet.Cells[5, distOdrIdx].Value.ToString()))
                             {
@@ -163,11 +157,6 @@ namespace Up
                                 distFacIdx++;
                             }
 
-                            while (ruSheet.Cells[6, ruFacIdx].Value == null || ruSheet.Cells[6, ruFacIdx].Value.ToString() != "廠別")
-                            {
-                                ruFacIdx++;
-                            }
-
                             Console.WriteLine(JsonConvert.SerializeObject(ruDic));
                             /*while (sheet.Cells[6, ruDeptIdx].Value == null || sheet.Cells[6, ruDeptIdx].Value.ToString() != "部門")
                             {
@@ -182,7 +171,6 @@ namespace Up
                 MessageBox.Show($"請選擇製作人", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
         private void button5_Click(object sender, EventArgs e)
         {
             var excelFile = new FileInfo(textBox2.Text);
@@ -212,7 +200,7 @@ namespace Up
                         int idx = 7;
                         ruNameIdx = 1;
                         ruDeptIdx = 1;
-                        int ruFactoryIdx = 1;
+                        ruFacIdx = 1;
                         int ruACCOUNTIdx = 1;
                         while (sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人")
                         {
@@ -229,28 +217,129 @@ namespace Up
                             ruACCOUNTIdx++;
                         }
 
-                        while (ruFactoryIdx < sheet1.Dimension.Columns && (sheet1.Cells[6, ruFactoryIdx].Value == null || sheet1.Cells[6, ruFactoryIdx].Value.ToString() != "廠別"))
+                        while (ruFacIdx < sheet1.Dimension.Columns && (sheet1.Cells[6, ruFacIdx].Value == null || sheet1.Cells[6, ruFacIdx].Value.ToString() != "廠別"))
                         {
-                            ruFactoryIdx++;
+                            ruFacIdx++;
                         }
 
-                        Dictionary<string, bool> DicRM = new Dictionary<string, bool>();
-
-                        while (idx <= sheet1.Dimension.Rows)
+                        while (sheet1.Cells[5, ruOdrIdx].Value == null || sheet1.Cells[5, ruOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
                         {
-                            if (string.Equals(sheet1.Cells[idx, ruACCOUNTIdx].Value?.ToString(), "RM", StringComparison.OrdinalIgnoreCase))
-                            {
-                                if (sheet1.Cells[idx, ruFactoryIdx].Value != null)
-                                {
-                                    var factory = $"{sheet1.Cells[idx, ruFactoryIdx].Value}";
+                            ruOdrIdx++;
+                        }
+                        ruOdrIdx++;
 
-                                    if (!DicRM.ContainsKey(factory))
+                        Dictionary<string, Dictionary<string, int>> DicRM = new Dictionary<string, Dictionary<string, int>>();
+                        Dictionary<string, Dictionary<string, int>> DicOrder = new Dictionary<string, Dictionary<string, int>>();
+                        for (idx = 7; idx <= sheet1.Dimension.Columns; idx++)
+                        {
+                            if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (string.Equals(sheet1.Cells[idx, ruACCOUNTIdx].Value?.ToString(), "RM", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (sheet1.Cells[idx, ruFacIdx].Value != null)
                                     {
-                                        DicRM.Add(factory, false);
+                                        var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
+
+                                        if (!DicRM.ContainsKey(factory))
+                                        {
+                                            DicRM.Add(factory, new Dictionary<string, int>());
+                                        }
+
+                                        var f = DicRM[factory];
+                                        for (var i = ruOdrIdx; i <= sheet1.Dimension.Columns; i++)
+                                        {
+                                            if (sheet1.Cells[5, i].Value != null && sheet1.Cells[idx, i].Value != null && int.TryParse(sheet1.Cells[idx, i].Value.ToString(), out int q) && q > 0)
+                                            {
+                                                string key = sheet1.Cells[5, i].Value.ToString();
+                                                if (!f.ContainsKey(key))
+                                                {
+                                                    f.Add(key, 0);
+                                                }
+
+                                                f[key] += q;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (sheet1.Cells[idx, ruFacIdx].Value != null)
+                                    {
+                                        var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
+
+                                        if (!DicOrder.ContainsKey(factory))
+                                        {
+                                            DicOrder.Add(factory, new Dictionary<string, int>());
+                                        }
+
+                                        var f = DicOrder[factory];
+                                        for (var i = ruOdrIdx; i <= sheet1.Dimension.Columns; i++)
+                                        {
+                                            if (sheet1.Cells[5, i].Value != null && sheet1.Cells[idx, i].Value != null && int.TryParse(sheet1.Cells[idx, i].Value.ToString(), out int q) && q > 0)
+                                            {
+                                                string key = sheet1.Cells[5, i].Value.ToString();
+                                                if (!f.ContainsKey(key))
+                                                {
+                                                    f.Add(key, 0);
+                                                }
+
+                                                f[key] += q;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                            idx++;
+                        }
+
+                        StringBuilder compareErr = new StringBuilder();
+
+                        foreach (var rm in DicRM)
+                        {
+                            if(DicOrder.ContainsKey(rm.Key))
+                            {
+                                var o = DicOrder[rm.Key];
+                                foreach(var r in rm.Value)
+                                {
+                                    if (o.ContainsKey(r.Key))
+                                    {
+                                        if (o[r.Key] != r.Value)
+                                            compareErr.AppendLine($"'{r.Key}'RM:{r.Value:#,##0}不等於Sum:{o[r.Key]:#,##0}");
+                                    }
+                                    else
+                                    {
+                                        compareErr.AppendLine($"ORDER NO'{r.Key}'不存在於RM");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                compareErr.AppendLine($"廠別'{rm.Key}'不存在");
+                            }
+                        }
+
+                        foreach (var o in DicOrder)
+                        {
+                            if (DicRM.ContainsKey(o.Key))
+                            {
+                                var r = DicRM[o.Key];
+                                foreach (var oo in o.Value)
+                                {
+                                    if (!r.ContainsKey(oo.Key))
+                                    {
+                                        compareErr.AppendLine($"ORDER NO'{oo.Key}'不存在於??");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                compareErr.AppendLine($"廠別'{o.Key}'不存在RM");
+                            }
+                        }
+
+                        if (compareErr.ToString().Length > 0)
+                        {
+                            Console.WriteLine(compareErr.ToString());
+                            return;
                         }
 
                         Dictionary<string, bool> DicName = new Dictionary<string, bool>();
