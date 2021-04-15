@@ -332,7 +332,7 @@ namespace Up
                             }
                             else
                             {
-                                compareErr.AppendLine($"廠別'{o.Key}'不存在RM");
+                                compareErr.AppendLine($"廠別'{o.Key}'不存在??");
                             }
                         }
 
