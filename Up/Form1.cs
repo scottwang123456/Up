@@ -237,8 +237,8 @@ namespace Up
                             }
                         }
 
-                        Dictionary<string, Dictionary<string, int>> DicFacRM = new Dictionary<string, Dictionary<string, int>>();
-                        Dictionary<string, Dictionary<string, int>> DicFacOrder = new Dictionary<string, Dictionary<string, int>>();
+                        Dictionary<string, Dictionary<string, int>> DicRMFac = new Dictionary<string, Dictionary<string, int>>();
+                        Dictionary<string, Dictionary<string, int>> DicOrderFac = new Dictionary<string, Dictionary<string, int>>();
                         Dictionary<string, int> DicMayOrder = new Dictionary<string, int>();
 
                         for (var i = 7; i <= sheet1.Dimension.Columns; i++)
@@ -257,20 +257,12 @@ namespace Up
                         {
                             if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
                             {
-
                                 var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
 
                                 if (string.Equals(sheet1.Cells[idx, ruACCOUNTIdx].Value?.ToString(), "RM", StringComparison.OrdinalIgnoreCase))
                                 {
                                     if (sheet1.Cells[idx, ruFacIdx].Value != null)
                                     {
-
-                                        if (!DicFacRM.ContainsKey(factory))
-                                        {
-                                            DicFacRM.Add(factory, new Dictionary<string, int>());
-                                        }
-
-                                        var f = DicFacRM[factory];
                                         for (var i = ruOdrIdx; i <= sheet1.Dimension.Columns; i++)
                                         {
                                             if (sheet1.Cells[5, i].Value != null && sheet1.Cells[idx, i].Value != null && int.TryParse(sheet1.Cells[idx, i].Value.ToString(), out int q) && q > 0)
@@ -278,12 +270,19 @@ namespace Up
                                                 string key = sheet1.Cells[5, i].Value.ToString();
                                                 if (DicMayOrder.ContainsKey(key))
                                                 {
-                                                    if (!f.ContainsKey(key))
+                                                    if (!DicRMFac.ContainsKey(key))
                                                     {
-                                                        f.Add(key, 0);
+                                                        DicRMFac.Add(key, new Dictionary<string, int>());
                                                     }
 
-                                                    f[key] += q;
+                                                    var f = DicRMFac[key];
+
+                                                    if (!f.ContainsKey(factory))
+                                                    {
+                                                        f.Add(factory, 0);
+                                                    }
+
+                                                    f[factory] += q;
                                                 }
                                             }
                                         }
@@ -293,12 +292,6 @@ namespace Up
                                 {
                                     if (sheet1.Cells[idx, ruFacIdx].Value != null)
                                     {
-                                        if (!DicFacOrder.ContainsKey(factory))
-                                        {
-                                            DicFacOrder.Add(factory, new Dictionary<string, int>());
-                                        }
-
-                                        var f = DicFacOrder[factory];
                                         for (var i = ruOdrIdx; i <= sheet1.Dimension.Columns; i++)
                                         {
                                             if (sheet1.Cells[5, i].Value != null && sheet1.Cells[idx, i].Value != null && int.TryParse(sheet1.Cells[idx, i].Value.ToString(), out int q) && q > 0)
@@ -306,12 +299,19 @@ namespace Up
                                                 string key = sheet1.Cells[5, i].Value.ToString();
                                                 if (DicMayOrder.ContainsKey(key))
                                                 {
-                                                    if (!f.ContainsKey(key))
+                                                    if (!DicOrderFac.ContainsKey(key))
                                                     {
-                                                        f.Add(key, 0);
+                                                        DicOrderFac.Add(key, new Dictionary<string, int>());
                                                     }
 
-                                                    f[key] += q;
+                                                    var f = DicOrderFac[key];
+
+                                                    if (!f.ContainsKey(factory))
+                                                    {
+                                                        f.Add(factory, 0);
+                                                    }
+
+                                                    f[factory] += q;
                                                 }
                                             }
                                         }
@@ -320,51 +320,70 @@ namespace Up
                             }
                         }
 
-
+                        Console.WriteLine(JsonConvert.SerializeObject(DicRMFac));
+                        Console.WriteLine(JsonConvert.SerializeObject(DicOrderFac));
                         StringBuilder compareErr = new StringBuilder();
                         //Dictionary<string,>
 
-                        foreach (var rm in DicFacRM)
+                        foreach (var may in DicMayOrder)
                         {
-                            if (DicFacOrder.ContainsKey(rm.Key))
+                            if(DicOrderFac.ContainsKey(may.Key))
                             {
-                                var o = DicFacOrder[rm.Key];
-                                foreach (var r in rm.Value)
+                                int ot = 0;
+                                foreach(var o in DicOrderFac[may.Key])
                                 {
-                                    if (o.ContainsKey(r.Key))
-                                    {
-                                        if (o[r.Key] != r.Value)
-                                            compareErr.AppendLine($"'{r.Key}'RM:{r.Value:#,##0}不等於Sum:{o[r.Key]:#,##0}");
-                                    }
-                                    else
-                                    {
-                                        compareErr.AppendLine($"ORDER NO'{r.Key}'不存在於RM");
-                                    }
+                                    ot += o.Value;
                                 }
-                            }
-                            else
-                            {
-                                compareErr.AppendLine($"廠別'{rm.Key}'不存在");
-                            }
-                        }
 
-                        foreach (var o in DicFacOrder)
-                        {
-                            if (DicFacRM.ContainsKey(o.Key))
-                            {
-                                var r = DicFacRM[o.Key];
-                                foreach (var oo in o.Value)
+                                if (ot != may.Value)
                                 {
-                                    if (!r.ContainsKey(oo.Key))
+                                    compareErr.AppendLine($@"""{may.Key}"" ,數量錯誤, sum:{ot:#,##0}不等於May:{may.Value:#,##0}");
+                                }
+                                else
+                                {
+                                    bool hasFacErr = false;
+                                    foreach (var o in DicOrderFac[may.Key])
                                     {
-                                        compareErr.AppendLine($"ORDER NO'{oo.Key}'不存在於??");
+                                        var oo = DicRMFac[may.Key];
+                                        if (!oo.ContainsKey(o.Key) || oo[o.Key] < o.Value)
+                                        {
+                                            hasFacErr = true;
+                                        }
+                                    }
+                                    if (hasFacErr)
+                                    {
+                                        if (DicRMFac.ContainsKey(may.Key))
+                                            compareErr.AppendLine($@"""{may.Key}"" ,廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                        else
+                                            compareErr.AppendLine($@"""{may.Key}"" ,廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
                                     }
                                 }
                             }
                             else
                             {
-                                compareErr.AppendLine($"廠別'{o.Key}'不存在??");
+                                compareErr.AppendLine($@"""{may.Key}"" ,May:{may.Value:#,##0}不存在於訂單");
                             }
+
+                            //if (DicOrderFac.ContainsKey(rm.Key))
+                            //{
+                            //    var o = DicOrderFac[rm.Key];
+                            //    foreach (var r in rm.Value)
+                            //    {
+                            //        if (o.ContainsKey(r.Key))
+                            //        {
+                            //            if (o[r.Key] != r.Value)
+                            //                compareErr.AppendLine($"'{r.Key}'RM:{r.Value:#,##0}不等於Sum:{o[r.Key]:#,##0}");
+                            //        }
+                            //        else
+                            //        {
+                            //            compareErr.AppendLine($"ORDER NO'{r.Key}'不存在於RM");
+                            //        }
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    compareErr.AppendLine($"廠別'{rm.Key}'不存在");
+                            //}
                         }
 
                         if (compareErr.ToString().Length > 0)
