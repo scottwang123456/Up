@@ -198,6 +198,7 @@ namespace Up
                     if (sheet1 != null)
                     {
                         int idx = 7;
+                        int RU_May_Idx = 0;
                         ruNameIdx = 1;
                         ruDeptIdx = 1;
                         ruFacIdx = 1;
@@ -228,35 +229,62 @@ namespace Up
                         }
                         ruOdrIdx++;
 
-                        Dictionary<string, Dictionary<string, int>> DicRM = new Dictionary<string, Dictionary<string, int>>();
-                        Dictionary<string, Dictionary<string, int>> DicOrder = new Dictionary<string, Dictionary<string, int>>();
-                        for (idx = 7; idx <= sheet1.Dimension.Columns; idx++)
+                        for (RU_May_Idx = sheet1.Dimension.Rows; RU_May_Idx >= 7; RU_May_Idx--)
+                        {
+                            if (sheet1.Cells[RU_May_Idx, 5].Value != null && sheet1.Cells[RU_May_Idx, 5].Value.ToString().Trim().IndexOf("RU May") != -1)
+                            {
+                                break;
+                            }
+                        }
+
+                        Dictionary<string, Dictionary<string, int>> DicFacRM = new Dictionary<string, Dictionary<string, int>>();
+                        Dictionary<string, Dictionary<string, int>> DicFacOrder = new Dictionary<string, Dictionary<string, int>>();
+                        Dictionary<string, int> DicMayOrder = new Dictionary<string, int>();
+
+                        for (var i = 7; i <= sheet1.Dimension.Columns; i++)
+                        {
+                            if (sheet1.Cells[5, i].Value != null && sheet1.Cells[RU_May_Idx, i].Value != null && int.TryParse(sheet1.Cells[RU_May_Idx, i].Value.ToString(), out int q) && q > 0)
+                            {
+                                string orderKey = sheet1.Cells[5, i].Value.ToString();
+                                if (!DicMayOrder.ContainsKey(orderKey))
+                                {
+                                    DicMayOrder.Add(orderKey, q);
+                                }
+                            }
+                        }
+                        Console.WriteLine(JsonConvert.SerializeObject(DicMayOrder));
+                        for (idx = 7; idx <= sheet1.Dimension.Rows; idx++)
                         {
                             if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
                             {
+
+                                var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
+
                                 if (string.Equals(sheet1.Cells[idx, ruACCOUNTIdx].Value?.ToString(), "RM", StringComparison.OrdinalIgnoreCase))
                                 {
                                     if (sheet1.Cells[idx, ruFacIdx].Value != null)
                                     {
-                                        var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
 
-                                        if (!DicRM.ContainsKey(factory))
+                                        if (!DicFacRM.ContainsKey(factory))
                                         {
-                                            DicRM.Add(factory, new Dictionary<string, int>());
+                                            DicFacRM.Add(factory, new Dictionary<string, int>());
                                         }
 
-                                        var f = DicRM[factory];
+                                        var f = DicFacRM[factory];
                                         for (var i = ruOdrIdx; i <= sheet1.Dimension.Columns; i++)
                                         {
                                             if (sheet1.Cells[5, i].Value != null && sheet1.Cells[idx, i].Value != null && int.TryParse(sheet1.Cells[idx, i].Value.ToString(), out int q) && q > 0)
                                             {
                                                 string key = sheet1.Cells[5, i].Value.ToString();
-                                                if (!f.ContainsKey(key))
+                                                if (DicMayOrder.ContainsKey(key))
                                                 {
-                                                    f.Add(key, 0);
-                                                }
+                                                    if (!f.ContainsKey(key))
+                                                    {
+                                                        f.Add(key, 0);
+                                                    }
 
-                                                f[key] += q;
+                                                    f[key] += q;
+                                                }
                                             }
                                         }
                                     }
@@ -265,25 +293,26 @@ namespace Up
                                 {
                                     if (sheet1.Cells[idx, ruFacIdx].Value != null)
                                     {
-                                        var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
-
-                                        if (!DicOrder.ContainsKey(factory))
+                                        if (!DicFacOrder.ContainsKey(factory))
                                         {
-                                            DicOrder.Add(factory, new Dictionary<string, int>());
+                                            DicFacOrder.Add(factory, new Dictionary<string, int>());
                                         }
 
-                                        var f = DicOrder[factory];
+                                        var f = DicFacOrder[factory];
                                         for (var i = ruOdrIdx; i <= sheet1.Dimension.Columns; i++)
                                         {
                                             if (sheet1.Cells[5, i].Value != null && sheet1.Cells[idx, i].Value != null && int.TryParse(sheet1.Cells[idx, i].Value.ToString(), out int q) && q > 0)
                                             {
                                                 string key = sheet1.Cells[5, i].Value.ToString();
-                                                if (!f.ContainsKey(key))
+                                                if (DicMayOrder.ContainsKey(key))
                                                 {
-                                                    f.Add(key, 0);
-                                                }
+                                                    if (!f.ContainsKey(key))
+                                                    {
+                                                        f.Add(key, 0);
+                                                    }
 
-                                                f[key] += q;
+                                                    f[key] += q;
+                                                }
                                             }
                                         }
                                     }
@@ -291,14 +320,16 @@ namespace Up
                             }
                         }
 
-                        StringBuilder compareErr = new StringBuilder();
 
-                        foreach (var rm in DicRM)
+                        StringBuilder compareErr = new StringBuilder();
+                        //Dictionary<string,>
+
+                        foreach (var rm in DicFacRM)
                         {
-                            if(DicOrder.ContainsKey(rm.Key))
+                            if (DicFacOrder.ContainsKey(rm.Key))
                             {
-                                var o = DicOrder[rm.Key];
-                                foreach(var r in rm.Value)
+                                var o = DicFacOrder[rm.Key];
+                                foreach (var r in rm.Value)
                                 {
                                     if (o.ContainsKey(r.Key))
                                     {
@@ -317,11 +348,11 @@ namespace Up
                             }
                         }
 
-                        foreach (var o in DicOrder)
+                        foreach (var o in DicFacOrder)
                         {
-                            if (DicRM.ContainsKey(o.Key))
+                            if (DicFacRM.ContainsKey(o.Key))
                             {
-                                var r = DicRM[o.Key];
+                                var r = DicFacRM[o.Key];
                                 foreach (var oo in o.Value)
                                 {
                                     if (!r.ContainsKey(oo.Key))
