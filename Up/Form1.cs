@@ -202,6 +202,7 @@ namespace Up
                         ruNameIdx = 1;
                         ruDeptIdx = 1;
                         ruFacIdx = 1;
+                        ruOdrIdx = 1;
                         int ruACCOUNTIdx = 1;
                         while (sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人")
                         {
@@ -223,7 +224,7 @@ namespace Up
                             ruFacIdx++;
                         }
 
-                        while (sheet1.Cells[5, ruOdrIdx].Value == null || sheet1.Cells[5, ruOdrIdx].Value.ToString().IndexOf("ORDER NO.") == -1)
+                        while (sheet1.Cells[5, ruOdrIdx].Value == null || sheet1.Cells[5, ruOdrIdx].Value.ToString().Trim().IndexOf("ORDER NO.") == -1)
                         {
                             ruOdrIdx++;
                         }
