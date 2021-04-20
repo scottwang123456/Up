@@ -241,6 +241,8 @@ namespace Up
                         Dictionary<string, Dictionary<string, int>> DicRMFac = new Dictionary<string, Dictionary<string, int>>();
                         Dictionary<string, Dictionary<string, int>> DicOrderFac = new Dictionary<string, Dictionary<string, int>>();
                         Dictionary<string, int> DicMayOrder = new Dictionary<string, int>();
+                        Dictionary<string, bool> DicOrderNoExistsMay = new Dictionary<string, bool>();
+                        StringBuilder compareErr = new StringBuilder();
 
                         for (var i = 7; i <= sheet1.Dimension.Columns; i++)
                         {
@@ -314,6 +316,11 @@ namespace Up
 
                                                     f[factory] += q;
                                                 }
+                                                else if (!DicOrderNoExistsMay.ContainsKey(key))
+                                                {
+                                                    DicOrderNoExistsMay.Add(key, false);
+                                                    compareErr.AppendLine($"\"{key}\" ,不存在於May");
+                                                }
                                             }
                                         }
                                     }
@@ -323,46 +330,50 @@ namespace Up
 
                         Console.WriteLine(JsonConvert.SerializeObject(DicRMFac));
                         Console.WriteLine(JsonConvert.SerializeObject(DicOrderFac));
-                        StringBuilder compareErr = new StringBuilder();
                         //Dictionary<string,>
 
                         foreach (var may in DicMayOrder)
                         {
-                            if(DicOrderFac.ContainsKey(may.Key))
+                            if (DicOrderFac.ContainsKey(may.Key))
                             {
                                 int ot = 0;
-                                foreach(var o in DicOrderFac[may.Key])
+                                bool hasQtErr = false;
+                                foreach (var o in DicOrderFac[may.Key])
                                 {
                                     ot += o.Value;
                                 }
 
                                 if (ot != may.Value)
                                 {
-                                    compareErr.AppendLine($@"""{may.Key}"" ,數量錯誤, sum:{ot:#,##0}不等於May:{may.Value:#,##0}");
+                                    hasQtErr = true;
                                 }
-                                else
+
+                                bool hasFacErr = false;
+                                foreach (var o in DicOrderFac[may.Key])
                                 {
-                                    bool hasFacErr = false;
-                                    foreach (var o in DicOrderFac[may.Key])
+                                    var oo = DicRMFac[may.Key];
+                                    if (!oo.ContainsKey(o.Key) || oo[o.Key] < o.Value)
                                     {
-                                        var oo = DicRMFac[may.Key];
-                                        if (!oo.ContainsKey(o.Key) || oo[o.Key] < o.Value)
-                                        {
-                                            hasFacErr = true;
-                                        }
+                                        hasFacErr = true;
                                     }
-                                    if (hasFacErr)
-                                    {
-                                        if (DicRMFac.ContainsKey(may.Key))
-                                            compareErr.AppendLine($@"""{may.Key}"" ,廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
-                                        else
-                                            compareErr.AppendLine($@"""{may.Key}"" ,廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
-                                    }
+                                }
+
+                                if (hasFacErr || hasQtErr)
+                                {
+                                    compareErr.AppendLine(may.Key);
+
+                                    if (hasQtErr)
+                                        compareErr.AppendLine($@"數量錯誤, sum:{ot:#,##0}不等於May:{may.Value:#,##0}");
+
+                                    if (DicRMFac.ContainsKey(may.Key))
+                                        compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                    else
+                                        compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
                                 }
                             }
                             else
                             {
-                                compareErr.AppendLine($@"""{may.Key}"" ,May:{may.Value:#,##0}不存在於訂單");
+                                compareErr.AppendLine($"{may.Key}\r\n ,May:{may.Value:#,##0}不存在於訂單");
                             }
 
                             //if (DicOrderFac.ContainsKey(rm.Key))
