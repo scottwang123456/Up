@@ -331,6 +331,10 @@ namespace Up
                         Console.WriteLine(JsonConvert.SerializeObject(DicRMFac));
                         Console.WriteLine(JsonConvert.SerializeObject(DicOrderFac));
                         //Dictionary<string,>
+                        if (compareErr.Length > 0)
+                        {
+                            compareErr.AppendLine();
+                        }
 
                         foreach (var may in DicMayOrder)
                         {
@@ -365,10 +369,13 @@ namespace Up
                                     if (hasQtErr)
                                         compareErr.AppendLine($@"數量錯誤, sum:{ot:#,##0}不等於May:{may.Value:#,##0}");
 
-                                    if (DicRMFac.ContainsKey(may.Key))
-                                        compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
-                                    else
-                                        compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
+                                    if (hasFacErr)
+                                    {
+                                        if (DicRMFac.ContainsKey(may.Key))
+                                            compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                        else
+                                            compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
+                                    }
                                 }
                             }
                             else
