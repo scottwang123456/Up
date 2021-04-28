@@ -376,11 +376,14 @@ namespace Up
                                         else
                                             compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
                                     }
+                                    compareErr.AppendLine();
                                 }
                             }
                             else
                             {
-                                compareErr.AppendLine($"{may.Key}\r\n ,May:{may.Value:#,##0}不存在於訂單");
+                                compareErr.AppendLine(may.Key);
+                                compareErr.AppendLine($"May:{may.Value:#,##0}不存在於訂單");
+                                compareErr.AppendLine();
                             }
 
                             //if (DicOrderFac.ContainsKey(rm.Key))
