@@ -19,7 +19,7 @@ namespace Up
 
         public void SetError(string content)
         {
-            textBox1.Text = content;
+            
         }
     }
 }

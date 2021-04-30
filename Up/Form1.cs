@@ -255,7 +255,7 @@ namespace Up
                                 }
                             }
                         }
-                        Console.WriteLine(JsonConvert.SerializeObject(DicMayOrder));
+
                         for (idx = 7; idx <= sheet1.Dimension.Rows; idx++)
                         {
                             if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
@@ -330,6 +330,7 @@ namespace Up
 
                         Console.WriteLine(JsonConvert.SerializeObject(DicRMFac));
                         Console.WriteLine(JsonConvert.SerializeObject(DicOrderFac));
+                        Console.WriteLine(JsonConvert.SerializeObject(DicMayOrder));
                         //Dictionary<string,>
                         if (compareErr.Length > 0)
                         {
@@ -371,10 +372,27 @@ namespace Up
 
                                     if (hasFacErr)
                                     {
+                                        hasFacErr = false;
                                         if (DicRMFac.ContainsKey(may.Key))
-                                            compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                        {
+                                            var aa = DicRMFac[may.Key];
+                                            var bb = DicOrderFac[may.Key];
+
+                                            foreach(var aaa in aa)
+                                            {
+                                                if(!bb.ContainsKey(aaa.Key))
+                                                {
+                                                    hasFacErr = true;
+                                                }
+                                            }
+
+                                            if (hasFacErr)
+                                                compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                        }
                                         else
+                                        {
                                             compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
+                                        }
                                     }
                                     compareErr.AppendLine();
                                 }
