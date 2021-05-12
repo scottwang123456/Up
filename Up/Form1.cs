@@ -368,37 +368,46 @@ namespace Up
                                     compareErr.AppendLine(may.Key);
 
                                     if (hasQtErr)
-                                        compareErr.AppendLine($@"數量錯誤, sum:{ot:#,##0}不等於May:{may.Value:#,##0}");
-
-                                    if (hasFacErr && !hasQtErr)
                                     {
-                                        if (DicRMFac.ContainsKey(may.Key))
+                                        compareErr.AppendLine($@"數量錯誤, sum:{ot:#,##0}不等於May:{may.Value:#,##0}");
+                                    }
+
+                                    if (hasFacErr)
+                                    {
+                                        if (!hasQtErr)
                                         {
-                                            compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                            if (DicRMFac.ContainsKey(may.Key))
+                                            {
+                                                compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                            }
+                                            else
+                                            {
+                                                compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
+                                            }
                                         }
                                         else
                                         {
-                                            compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
-                                        }
-                                    }
-                                    else if (hasFacErr)
-                                    {
-                                        var hasFacErrToo = false;
-                                        if (DicRMFac.ContainsKey(may.Key))
-                                        {
-                                            var aa = DicRMFac[may.Key];
-                                            var bb = DicOrderFac[may.Key];
-
-                                            foreach (var aaa in aa)
+                                            var hasFacErrToo = false;
+                                            if (DicRMFac.ContainsKey(may.Key))
                                             {
-                                                if (!bb.ContainsKey(aaa.Key))
-                                                {
-                                                    hasFacErrToo = true;
-                                                }
-                                            }
+                                                var aa = DicRMFac[may.Key];
+                                                var bb = DicOrderFac[may.Key];
 
-                                            if (hasFacErrToo)
-                                                compareErr.AppendLine($"廠區也錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                                foreach (var aaa in aa)
+                                                {
+                                                    if (!bb.ContainsKey(aaa.Key))
+                                                    {
+                                                        hasFacErrToo = true;
+                                                    }
+                                                }
+
+                                                if (hasFacErrToo)
+                                                    compareErr.AppendLine($"廠區也錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不等於RM:{JsonConvert.SerializeObject(DicRMFac[may.Key])}");
+                                            }
+                                            else
+                                            {
+                                                compareErr.AppendLine($"廠區錯誤, sum:{JsonConvert.SerializeObject(DicOrderFac[may.Key])}不存在於RM");
+                                            }
                                         }
                                     }
                                     compareErr.AppendLine();
