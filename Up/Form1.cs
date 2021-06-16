@@ -204,7 +204,7 @@ namespace Up
                         ruFacIdx = 1;
                         ruOdrIdx = 1;
                         int ruACCOUNTIdx = 1;
-                        while (sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人")
+                        while ((sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人") && ruNameIdx < sheet1.Dimension.Columns)
                         {
                             ruNameIdx++;
                         }
@@ -452,7 +452,7 @@ namespace Up
 
                         Dictionary<string, bool> DicName = new Dictionary<string, bool>();
                         idx = 7;
-                        while (idx <= sheet1.Dimension.Rows)
+                        /*while (idx <= sheet1.Dimension.Rows)
                         {
                             if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
                             {
@@ -467,7 +467,7 @@ namespace Up
                                 }
                             }
                             idx++;
-                        }
+                        }*/
                         var nameList = DicName.Select(x => x.Key);
                         //MessageBox.Show($"{string.Join(",", nameList)}");
 
