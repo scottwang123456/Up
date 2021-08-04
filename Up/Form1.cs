@@ -356,10 +356,19 @@ namespace Up
                                 bool hasFacErr = false;
                                 foreach (var o in DicOrderFac[may.Key])
                                 {
-                                    var oo = DicRMFac[may.Key];
-                                    if (!oo.ContainsKey(o.Key) || oo[o.Key] < o.Value)
+
+                                    if (DicRMFac.ContainsKey(may.Key))
                                     {
-                                        hasFacErr = true;
+                                        var oo = DicRMFac[may.Key];
+
+                                        if (!oo.ContainsKey(o.Key) || oo[o.Key] < o.Value)
+                                        {
+                                            hasFacErr = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        compareErr.AppendLine($"\"{may.Key}\"沒有在RM清單");
                                     }
                                 }
 
