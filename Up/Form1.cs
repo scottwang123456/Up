@@ -51,6 +51,7 @@ namespace Up
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 checkedListBox1.Items.Clear();
+                button5.Enabled = false;
                 label3.Text = "";
                 Application.DoEvents();
                 textBox2.Text = openFileDialog1.FileName;
@@ -168,15 +169,28 @@ namespace Up
             }
             else
             {
-                MessageBox.Show($"請選擇製作人", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"請選擇製單人", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private void button5_Click(object sender, EventArgs e)
         {
+            Dictionary<string, bool> pairs = new Dictionary<string, bool>(comparer: StringComparer.OrdinalIgnoreCase);
+            if (checkedListBox1.CheckedItems.Count > 0)
+            {
+                foreach (var item in checkedListBox1.CheckedItems)
+                {
+                    pairs.Add(item.ToString(), false);
+                }
+            }
+            else
+            {
+                MessageBox.Show($"請選擇'製單人'", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var excelFile = new FileInfo(textBox2.Text);
             if (excelFile.Exists)
             {
-                checkedListBox1.Items.Clear();
                 Application.DoEvents();
                 using (var excel = new ExcelPackage(excelFile))
                 {
@@ -258,7 +272,7 @@ namespace Up
 
                         for (idx = 7; idx <= sheet1.Dimension.Rows; idx++)
                         {
-                            if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
+                            if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase) && (pairs.ContainsKey($"{sheet1.Cells[idx, ruNameIdx].Value}") || string.Equals(sheet1.Cells[idx, ruACCOUNTIdx].Value?.ToString(), "RM", StringComparison.OrdinalIgnoreCase)))
                             {
                                 var factory = $"{sheet1.Cells[idx, ruFacIdx].Value}";
 
@@ -458,31 +472,10 @@ namespace Up
                             errDialog.ShowDialog();
                             return;
                         }
-
-                        Dictionary<string, bool> DicName = new Dictionary<string, bool>();
-                        idx = 7;
-                        /*while (idx <= sheet1.Dimension.Rows)
+                        else
                         {
-                            if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
-                            {
-                                if (sheet1.Cells[idx, ruNameIdx].Value != null)
-                                {
-                                    var account = $"{sheet1.Cells[idx, ruNameIdx].Value}";
-
-                                    if (!DicName.ContainsKey(account))
-                                    {
-                                        DicName.Add(account, false);
-                                    }
-                                }
-                            }
-                            idx++;
-                        }*/
-                        var nameList = DicName.Select(x => x.Key);
-                        //MessageBox.Show($"{string.Join(",", nameList)}");
-
-                        checkedListBox1.Items.AddRange(nameList.ToArray());
-                        /*if (checkedListBox1.Items.Count > 0)
-                            ruSheet = sheet1;*/
+                            MessageBox.Show($"漂亮沒有錯誤!", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                     else
                     {
@@ -524,6 +517,97 @@ namespace Up
             catch (Exception ex)
             {
                 MessageBox.Show($"{ex}");
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            var excelFile = new FileInfo(textBox2.Text);
+            if (excelFile.Exists)
+            {
+                checkedListBox1.Items.Clear();
+                button5.Enabled = false;
+                Application.DoEvents();
+                using (var excel = new ExcelPackage(excelFile))
+                {
+                    //MessageBox.Show(string.Join(",", excel.Workbook.Worksheets.Select(x => x.Name)));
+                    ruWorkSheet = "";
+                    foreach (var sheet in excel.Workbook.Worksheets)
+                    {
+                        if (sheet.Name.StartsWith("WK", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ruWorkSheet = sheet.Name;
+                        }
+                    }
+
+                    label3.Text = ruWorkSheet;
+                    Application.DoEvents();
+                    ExcelWorksheet sheet1 = excel.Workbook.Worksheets[ruWorkSheet];
+
+                    //"UA1J"
+                    if (sheet1 != null)
+                    {
+                        int idx = 7;
+                        ruNameIdx = 1;
+                        ruDeptIdx = 1;
+
+                        while ((sheet1.Cells[6, ruNameIdx].Value == null || sheet1.Cells[6, ruNameIdx].Value.ToString() != "製單人") && ruNameIdx < sheet1.Dimension.Columns)
+                        {
+                            ruNameIdx++;
+                        }
+
+                        while (sheet1.Cells[6, ruDeptIdx].Value == null || sheet1.Cells[6, ruDeptIdx].Value.ToString() != "部門")
+                        {
+                            ruDeptIdx++;
+                        }
+
+                        if (sheet1.Cells[6, ruNameIdx].Value?.ToString() == "製單人")
+                        {
+                            Dictionary<string, bool> DicName = new Dictionary<string, bool>();
+                            idx = 7;
+                            while (idx <= sheet1.Dimension.Rows)
+                            {
+                                if (string.Equals(sheet1.Cells[idx, ruDeptIdx].Value?.ToString(), "UA1J", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (sheet1.Cells[idx, ruNameIdx].Value != null)
+                                    {
+                                        var account = $"{sheet1.Cells[idx, ruNameIdx].Value}";
+
+                                        if (!DicName.ContainsKey(account))
+                                        {
+                                            DicName.Add(account, false);
+                                        }
+                                    }
+                                }
+                                idx++;
+                            }
+                            var nameList = DicName.Select(x => x.Key);
+                            //MessageBox.Show($"{string.Join(",", nameList)}");
+
+                            checkedListBox1.Items.AddRange(nameList.ToArray());
+
+                            for (var i = 0; i < checkedListBox1.Items.Count; i++)
+                            {
+                                if (checkedListBox1.Items[i].ToString().IndexOf("樊宇珊") > -1 || checkedListBox1.Items[i].ToString().IndexOf("唐潤培") > -1)
+                                    checkedListBox1.SetItemChecked(i, true);
+                            }
+
+                            button5.Enabled = checkedListBox1.Items.Count > 0;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"找不到'製單人'", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"找不到'WK*'", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show($"找不到'{excelFile.Name}'", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
